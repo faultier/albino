@@ -10,4 +10,8 @@ git = "https://github.com/faultier/rust-whitebase.git"
 
 [[bin]]
 
+name = "albino-run"
+
+[[bin]]
+
 name = "albino"

@@ -6,24 +6,57 @@
 
 extern crate whitebase;
 
-use std::io::{BufReader, MemReader, MemWriter};
-use whitebase::machine;
-use whitebase::syntax::{Compiler, Whitespace};
+use std::os;
+use std::io::process::{Command,InheritFd,ExitStatus,ExitSignal};
 
 fn main() {
-    let src = "   \t\t \t  \t\n   \t  \t   \n\t\n  \t\n  \n\n\n";
-    let mut buffer = BufReader::new(src.as_bytes());
-    let mut writer = MemWriter::new();
-    let ws = Whitespace::new();
-    match ws.compile(&mut buffer, &mut writer) {
-        Err(e) => fail!("{}", e),
+    debug!("executing; cmd=albino; args={}", os::args());
+
+    let (cmd, args) = process(os::args());
+
+    match cmd.as_slice() {
+        "--help" | "-h" | "help" | "-?" => {
+            println!("Commands:");
+            println!("  run            # compile and run script");
+            println!("");
+        }
         _ => {
-            let mut reader = MemReader::new(writer.unwrap());
-            let mut machine = machine::with_stdio();
-            match machine.run(&mut reader) {
-                Err(e) => fail!("{}", e),
-                _ => (),
+            let command = format!("albino-{}{}", cmd, os::consts::EXE_SUFFIX);
+            let mut command = match os::self_exe_path() {
+                Some(path) => {
+                    let p = path.join(command.as_slice());
+                    if p.exists() {
+                        Command::new(p)
+                    } else {
+                        Command::new(command)
+                    }
+                }
+                None => Command::new(command),
+            };
+            let command = command
+                .args(args.as_slice())
+                .stdin(InheritFd(0))
+                .stdout(InheritFd(1))
+                .stderr(InheritFd(2))
+                .status();
+
+            match command {
+                Ok(ExitStatus(0)) => (),
+                Ok(ExitStatus(i)) | Ok(ExitSignal(i)) => handle_error("", i),
+                Err(_) => handle_error("no such command.", 127),
             }
-        },
+        }
     }
+}
+
+fn process(args: Vec<String>) -> (String, Vec<String>) {
+    let mut args = Vec::from_slice(args.tail());
+    let head = args.shift().unwrap_or("--help".to_string());
+
+    (head, args)
+}
+
+fn handle_error<'a>(message: &'a str, exit: int) {
+    println!("{}", message);
+    os::set_exit_status(exit)
 }
