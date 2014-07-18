@@ -1,4 +1,4 @@
-Snow
+Albino
 ================
 [![Build Status](https://travis-ci.org/faultier/rust-albino.svg?branch=master)](https://travis-ci.org/faultier/rust-albino)
 
