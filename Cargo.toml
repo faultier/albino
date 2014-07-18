@@ -1,0 +1,13 @@
+[package]
+
+name = "albino"
+version = "0.1.0"
+authors = ["faultier"]
+
+[dependencies.whitebase]
+
+git = "https://github.com/faultier/rust-whitebase.git"
+
+[[bin]]
+
+name = "albino"
