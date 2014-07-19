@@ -24,9 +24,7 @@ fn main() {
             println!("");
         }
         "--version" | "-v" | "version" => {
-            println!("albino {}, whitebase {}", albino::version(), "0.1.1");
-            //println!("albino {}, whitebase {}", albino::version(), whitebase::version());
-            //println!("albino v{}, whitebase v{}", albino::VERSION, whitebase::VERSION);
+            println!("albino {}, whitebase {}", albino::version(), whitebase::version());
         }
         _ => {
             let command = format!("albino-{}{}", cmd, os::consts::EXE_SUFFIX);

@@ -12,13 +12,13 @@ extern crate albino;
 use getopts::Matches;
 use std::os;
 use std::io::IoError;
-use whitebase::syntax::{Compile, Brainfuck, DT, Ook, Whitespace};
+use whitebase::syntax::{Compiler, Brainfuck, DT, Ook, Whitespace};
 
 use albino::command::{BuildCommand, BuildExecutable};
 use albino::util;
 use albino::util::Target;
 
-fn build<B: Buffer, W: Writer, C: Compile>(input: &mut B, output: &mut W, syntax: C) {
+fn build<B: Buffer, W: Writer, C: Compiler>(input: &mut B, output: &mut W, syntax: C) {
     match syntax.compile(input, output) {
         Err(e) => {
             println!("{}", e);

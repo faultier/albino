@@ -13,13 +13,13 @@ use getopts::Matches;
 use std::os;
 use std::io::{IoError, MemReader, MemWriter};
 use whitebase::machine;
-use whitebase::syntax::{Compile, Assembly, Brainfuck, DT, Ook, Whitespace};
+use whitebase::syntax::{Compiler, Assembly, Brainfuck, DT, Ook, Whitespace};
 
 use albino::command::{RunCommand, RunExecutable};
 use albino::util;
 use albino::util::Target;
 
-fn run<B: Buffer, C: Compile>(buffer: &mut B, syntax: C) {
+fn run<B: Buffer, C: Compiler>(buffer: &mut B, syntax: C) {
     let mut writer = MemWriter::new();
     match syntax.compile(buffer, &mut writer) {
         Err(e) => {
