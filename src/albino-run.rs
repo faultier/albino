@@ -8,11 +8,13 @@
 extern crate getopts;
 extern crate whitebase;
 
-use getopts::{optopt, getopts};
+use getopts::{optopt, getopts, Matches};
 use std::os;
-use std::io::{BufferedReader, File, MemReader, MemWriter};
+use std::io::{IoError, MemReader, MemWriter};
 use whitebase::machine;
 use whitebase::syntax::{Compile, Assembly, Brainfuck, DT, Ook, Whitespace};
+
+use util::{ErrorHandler, SourceReadCommand, Target};
 
 mod util;
 
@@ -37,6 +39,31 @@ fn run<B: Buffer, C: Compile>(buffer: &mut B, syntax: C) {
     }
 }
 
+struct RunCommand;
+
+impl SourceReadCommand for RunCommand {
+    fn handle_input<B: Buffer>(&self, _: &Matches, buffer: &mut B, target: Option<Target>) {
+        match target {
+            Some(util::Assembly)   => run(buffer, Assembly::new()),
+            Some(util::Brainfuck)  => run(buffer, Brainfuck::new()),
+            Some(util::DT)         => run(buffer, DT::new()),
+            Some(util::Ook)        => run(buffer, Ook::new()),
+            Some(util::Whitespace) => run(buffer, Whitespace::new()),
+            None => {
+                println!("syntax should be \"asm\", \"bf\", \"dt\", \"ook\" or \"ws\" (default: ws)");
+                os::set_exit_status(1);
+            },
+        }
+    }
+}
+
+impl ErrorHandler for RunCommand {
+    fn handle_error(&self, e: IoError) {
+        println!("{}", e);
+        os::set_exit_status(1);
+    }
+}
+
 fn main() {
     debug!("executing; cmd=albino-run; args={}", os::args());
 
@@ -46,36 +73,11 @@ fn main() {
     let matches = match getopts(os::args().tail(), opts) {
         Ok(m) => { m }
         Err(e) => {
-            println!("{}", e)
+            println!("{}", e);
             os::set_exit_status(1);
             return;
         }
     };
 
-    let syntax = matches.opt_str("s");
-    if !matches.free.is_empty() {
-        let ref filename = matches.free[0];
-        match File::open(&Path::new(filename.as_slice())) {
-            Ok(file) => {
-                let mut buffer = BufferedReader::new(file);
-                match util::detect_target(syntax, filename) {
-                    Some(util::Assembly)   => run(&mut buffer, Assembly::new()),
-                    Some(util::Brainfuck)  => run(&mut buffer, Brainfuck::new()),
-                    Some(util::DT)         => run(&mut buffer, DT::new()),
-                    Some(util::Ook)        => run(&mut buffer, Ook::new()),
-                    Some(util::Whitespace) => run(&mut buffer, Whitespace::new()),
-                    None => {
-                        println!("syntax should be \"asm\", \"bf\", \"dt\", \"ook\" or \"ws\" (default: ws)");
-                        os::set_exit_status(1);
-                    },
-                }
-            }
-            Err(e) => {
-                println!("{}", e);
-                os::set_exit_status(1);
-            }
-        }
-    } else {
-        unimplemented!()
-    }
+    RunCommand.select_input(&matches);
 }

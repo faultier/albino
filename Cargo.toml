@@ -19,4 +19,8 @@ name = "albino-build"
 
 [[bin]]
 
+name = "albino-exec"
+
+[[bin]]
+
 name = "albino"

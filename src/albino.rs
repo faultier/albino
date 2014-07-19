@@ -17,7 +17,9 @@ fn main() {
     match cmd.as_slice() {
         "--help" | "-h" | "help" | "-?" => {
             println!("Commands:");
-            println!("  run            # compile and run script");
+            println!("  build          # compile the source code file");
+            println!("  exec           # execute the bytecode file");
+            println!("  run            # build and execute");
             println!("");
         }
         _ => {
