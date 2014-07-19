@@ -30,5 +30,11 @@ path = "src/bin/albino-exec.rs"
 
 [[bin]]
 
+name = "albino-gen"
+path = "src/bin/albino-gen.rs"
+
+
+[[bin]]
+
 name = "albino"
 path = "src/bin/albino.rs"

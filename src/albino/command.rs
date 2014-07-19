@@ -171,3 +171,39 @@ impl<E: LoadExecutable> Executable for LoadCommand<E> {
         }
     }
 }
+
+pub trait GenerateExecutable {
+    fn handle_error(&self, IoError);
+    fn exec<R: Reader, W: Writer>(&self, &Matches, &mut R, &mut W, Option<Target>);
+}
+
+pub struct GenerateCommand<T> {
+    inner: T
+}
+
+impl<E: GenerateExecutable> GenerateCommand<E> {
+    pub fn new<'a>(command: &'static str, usage: &'static str, options: &'a mut Vec<OptGroup>, exec: E) -> Command<'a, LoadCommand<GenerateCommand<E>>> {
+        options.push(optopt("s", "syntax", "set input file syntax", "syntax"));
+        options.push(optopt("o", "", "set output file name", "name"));
+        LoadCommand::new(command, usage, options, GenerateCommand { inner: exec })
+    }
+}
+
+impl<E: GenerateExecutable> LoadExecutable for GenerateCommand<E> {
+    fn handle_error(&self, e: IoError) {
+        self.inner.handle_error(e);
+    }
+
+    fn exec<R: Reader>(&self, m: &Matches, reader: &mut R) {
+        let syntax = m.opt_str("s");
+        match m.opt_str("o") {
+            Some(ref name) => {
+                match File::open_mode(&Path::new(name.as_slice()), Open, Write) {
+                    Ok(ref mut output) => self.inner.exec(m, reader, output, detect_target(syntax, name)),
+                    Err(e) => self.inner.handle_error(e),
+                }
+            },
+            None => self.inner.exec(m, reader, &mut stdout(), detect_target(syntax, &"".to_string())),
+        }
+    }
+}
