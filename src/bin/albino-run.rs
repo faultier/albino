@@ -7,16 +7,17 @@
 
 extern crate getopts;
 extern crate whitebase;
+extern crate albino;
 
-use getopts::{optopt, getopts, Matches};
+use getopts::Matches;
 use std::os;
 use std::io::{IoError, MemReader, MemWriter};
 use whitebase::machine;
 use whitebase::syntax::{Compile, Assembly, Brainfuck, DT, Ook, Whitespace};
 
-use util::{ErrorHandler, SourceReadCommand, Target};
-
-mod util;
+use albino::command::{RunCommand, RunExecutable};
+use albino::util;
+use albino::util::Target;
 
 fn run<B: Buffer, C: Compile>(buffer: &mut B, syntax: C) {
     let mut writer = MemWriter::new();
@@ -31,7 +32,7 @@ fn run<B: Buffer, C: Compile>(buffer: &mut B, syntax: C) {
             match machine.run(&mut reader) {
                 Err(e) => {
                     println!("{}", e);
-                    os::set_exit_status(1);
+                    os::set_exit_status(2);
                 }
                 _ => (),
             }
@@ -39,10 +40,15 @@ fn run<B: Buffer, C: Compile>(buffer: &mut B, syntax: C) {
     }
 }
 
-struct RunCommand;
+struct CommandBody;
 
-impl SourceReadCommand for RunCommand {
-    fn handle_input<B: Buffer>(&self, _: &Matches, buffer: &mut B, target: Option<Target>) {
+impl RunExecutable for CommandBody {
+    fn handle_error(&self, e: IoError) {
+        println!("{}", e);
+        os::set_exit_status(1);
+    }
+
+    fn exec<B: Buffer>(&self, _: &Matches, buffer: &mut B, target: Option<Target>) {
         match target {
             Some(util::Assembly)   => run(buffer, Assembly::new()),
             Some(util::Brainfuck)  => run(buffer, Brainfuck::new()),
@@ -57,27 +63,12 @@ impl SourceReadCommand for RunCommand {
     }
 }
 
-impl ErrorHandler for RunCommand {
-    fn handle_error(&self, e: IoError) {
-        println!("{}", e);
-        os::set_exit_status(1);
-    }
-}
-
 fn main() {
     debug!("executing; cmd=albino-run; args={}", os::args());
 
-    let opts = [
-        optopt("s", "syntax", "set input file syntax", "SYNTAX"),
-        ];
-    let matches = match getopts(os::args().tail(), opts) {
-        Ok(m) => { m }
-        Err(e) => {
-            println!("{}", e);
-            os::set_exit_status(1);
-            return;
-        }
-    };
-
-    RunCommand.select_input(&matches);
+    let mut opts = vec!();
+    let cmd = RunCommand::new("run",
+                              "[-s syntax] [file]",
+                              &mut opts, CommandBody);
+    cmd.exec();
 }

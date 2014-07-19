@@ -7,14 +7,16 @@
 
 extern crate getopts;
 extern crate whitebase;
+extern crate albino;
 
-use getopts::{optopt, getopts, Matches};
+use getopts::Matches;
 use std::os;
 use std::io::IoError;
 use whitebase::syntax::{Compile, Brainfuck, DT, Ook, Whitespace};
-use util::{ErrorHandler, SourceReadCommand, SourceReadWriteCommand, Target};
 
-mod util;
+use albino::command::{BuildCommand, BuildExecutable};
+use albino::util;
+use albino::util::Target;
 
 fn build<B: Buffer, W: Writer, C: Compile>(input: &mut B, output: &mut W, syntax: C) {
     match syntax.compile(input, output) {
@@ -26,23 +28,15 @@ fn build<B: Buffer, W: Writer, C: Compile>(input: &mut B, output: &mut W, syntax
     }
 }
 
-struct BuildCommand;
+struct CommandBody;
 
-impl ErrorHandler for BuildCommand {
+impl BuildExecutable for CommandBody {
     fn handle_error(&self, e: IoError) {
         println!("{}", e);
         os::set_exit_status(1);
     }
-}
 
-impl SourceReadCommand for BuildCommand {
-    fn handle_input<B: Buffer>(&self, m: &Matches, buffer: &mut B, target: Option<Target>) {
-        self.select_output(m, buffer, target)
-    }
-}
-
-impl SourceReadWriteCommand for BuildCommand {
-    fn handle_io<B: Buffer, W: Writer>(&self, _: &Matches, buffer: &mut B, writer: &mut W, target: Option<Target>) {
+    fn exec<B: Buffer, W: Writer>(&self, _: &Matches, buffer: &mut B, writer: &mut W, target: Option<Target>) {
         match target {
             Some(util::Brainfuck)  => build(buffer, writer, Brainfuck::new()),
             Some(util::DT)         => build(buffer, writer, DT::new()),
@@ -57,20 +51,11 @@ impl SourceReadWriteCommand for BuildCommand {
 }
 
 fn main() {
-    debug!("executing; cmd=albino-run; args={}", os::args());
+    debug!("executing; cmd=albino-build; args={}", os::args());
 
-    let opts = [
-        optopt("o", "", "set output file name", "NAME"),
-        optopt("s", "syntax", "set input file syntax", "SYNTAX"),
-        ];
-    let matches = match getopts(os::args().tail(), opts) {
-        Ok(m) => { m }
-        Err(e) => {
-            println!("{}", e)
-                os::set_exit_status(1);
-            return;
-        }
-    };
-
-    BuildCommand.select_input(&matches);
+    let mut opts = vec!();
+    let cmd = BuildCommand::new("build",
+                                "[-s syntax] [-o output] [file]",
+                                &mut opts, CommandBody);
+    cmd.exec();
 }

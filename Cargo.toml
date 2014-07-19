@@ -9,18 +9,27 @@ authors = ["faultier"]
 version = "0.1.1"
 git = "https://github.com/faultier/rust-whitebase.git"
 
+[[lib]]
+
+name = "albino"
+path = "src/albino/lib.rs"
+
 [[bin]]
 
 name = "albino-run"
+path = "src/bin/albino-run.rs"
 
 [[bin]]
 
 name = "albino-build"
+path = "src/bin/albino-build.rs"
 
 [[bin]]
 
 name = "albino-exec"
+path = "src/bin/albino-exec.rs"
 
 [[bin]]
 
 name = "albino"
+path = "src/bin/albino.rs"

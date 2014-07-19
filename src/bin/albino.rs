@@ -5,6 +5,7 @@
 #[phase(plugin, link)] extern crate log;
 
 extern crate whitebase;
+extern crate albino;
 
 use std::os;
 use std::io::process::{Command,InheritFd,ExitStatus,ExitSignal};
@@ -21,6 +22,11 @@ fn main() {
             println!("  exec           # execute the bytecode file");
             println!("  run            # build and execute");
             println!("");
+        }
+        "--version" | "-v" | "version" => {
+            println!("albino {}, whitebase {}", albino::version(), "0.1.1");
+            //println!("albino {}, whitebase {}", albino::version(), whitebase::version());
+            //println!("albino v{}, whitebase v{}", albino::VERSION, whitebase::VERSION);
         }
         _ => {
             let command = format!("albino-{}{}", cmd, os::consts::EXE_SUFFIX);
