@@ -1,6 +1,7 @@
 #![crate_name="albino-run"]
 #![crate_type="bin"]
 #![feature(phase)]
+#![unstable]
 
 #[phase(plugin, link)] extern crate log;
 
@@ -12,6 +13,8 @@ use std::os;
 use std::io::{BufferedReader, File, MemReader, MemWriter};
 use whitebase::machine;
 use whitebase::syntax::{Compile, Assembly, Brainfuck, DT, Ook, Whitespace};
+
+mod util;
 
 fn run<B: Buffer, C: Compile>(buffer: &mut B, syntax: C) {
     let mut writer = MemWriter::new();
@@ -51,20 +54,20 @@ fn main() {
 
     let syntax = matches.opt_str("s");
     if !matches.free.is_empty() {
-        match File::open(&Path::new(matches.free[0].as_slice())) {
+        let ref filename = matches.free[0];
+        match File::open(&Path::new(filename.as_slice())) {
             Ok(file) => {
                 let mut buffer = BufferedReader::new(file);
-                match syntax {
-                    Some(ref s) if s.as_slice() == "asm" => run(&mut buffer, Assembly::new()),
-                    Some(ref s) if s.as_slice() == "bf"  => run(&mut buffer, Brainfuck::new()),
-                    Some(ref s) if s.as_slice() == "dt"  => run(&mut buffer, DT::new()),
-                    Some(ref s) if s.as_slice() == "ook" => run(&mut buffer, Ook::new()),
-                    Some(ref s) if s.as_slice() == "ws"  => run(&mut buffer, Whitespace::new()),
-                    Some(_) => {
+                match util::detect_target(syntax, filename) {
+                    Some(util::Assembly)   => run(&mut buffer, Assembly::new()),
+                    Some(util::Brainfuck)  => run(&mut buffer, Brainfuck::new()),
+                    Some(util::DT)         => run(&mut buffer, DT::new()),
+                    Some(util::Ook)        => run(&mut buffer, Ook::new()),
+                    Some(util::Whitespace) => run(&mut buffer, Whitespace::new()),
+                    None => {
                         println!("syntax should be \"asm\", \"bf\", \"dt\", \"ook\" or \"ws\" (default: ws)");
                         os::set_exit_status(1);
                     },
-                    None => run(&mut buffer, Whitespace::new()),
                 }
             }
             Err(e) => {

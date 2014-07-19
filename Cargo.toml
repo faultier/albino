@@ -15,4 +15,8 @@ name = "albino-run"
 
 [[bin]]
 
+name = "albino-build"
+
+[[bin]]
+
 name = "albino"
