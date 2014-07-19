@@ -11,9 +11,9 @@ use getopts::{optopt, getopts};
 use std::os;
 use std::io::{BufferedReader, File, MemReader, MemWriter};
 use whitebase::machine;
-use whitebase::syntax::{Compiler, Assembly, Brainfuck, DT, Ook, Whitespace};
+use whitebase::syntax::{Compile, Assembly, Brainfuck, DT, Ook, Whitespace};
 
-fn run<B: Buffer, C: Compiler>(buffer: &mut B, syntax: C) {
+fn run<B: Buffer, C: Compile>(buffer: &mut B, syntax: C) {
     let mut writer = MemWriter::new();
     match syntax.compile(buffer, &mut writer) {
         Err(e) => {
