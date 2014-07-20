@@ -4,7 +4,7 @@ Albino
 
 This is a compiler front-end for the esoteric languages (Whitespace, Brainfuck, Ook!, [DT](http://faultier.blog.jp/archives/1139763.html)) which is build as part of the [Whitebase](https://github.com/faultier/rust-whitebase) compiler infrastructure project.
 
-This tools and Whitebase are written by [Rust](http://www.rust-lang.org/).
+This tools and Whitebase are written in [Rust](http://www.rust-lang.org/).
 
 ## Features
 

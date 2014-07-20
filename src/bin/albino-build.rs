@@ -1,4 +1,4 @@
-#![crate_name="albino-run"]
+#![crate_name="albino-build"]
 #![crate_type="bin"]
 #![feature(phase)]
 #![unstable]
