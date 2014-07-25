@@ -1,6 +1,6 @@
 Albino
 ================
-[![Build Status](https://travis-ci.org/faultier/rust-albino.svg?branch=master)](https://travis-ci.org/faultier/rust-albino)
+[![Build Status](https://travis-ci.org/faultier/albino.svg?branch=master)](https://travis-ci.org/faultier/albino)
 
 This is a compiler front-end for the esoteric languages (Whitespace, Brainfuck, Ook!, [DT](http://faultier.blog.jp/archives/1139763.html)) which is build as part of the [Whitebase](https://github.com/faultier/rust-whitebase) compiler infrastructure project.
 
