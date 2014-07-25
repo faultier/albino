@@ -6,7 +6,7 @@ authors = ["faultier"]
 
 [dependencies.whitebase]
 
-git = "https://github.com/faultier/rust-whitebase.git"
+git = "https://github.com/faultier/whitebase.git"
 
 [[lib]]
 
